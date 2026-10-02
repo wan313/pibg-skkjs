@@ -157,7 +157,25 @@ async function saveDoc(e){
 async function deleteDoc(id){if(!confirm("Nyahaktifkan dokumen ini?"))return;try{const data=await jsonp({action:"deleteDocument",id,token:state.token});if(!data.ok)throw new Error(data.message||"Gagal.");await load();await loadAdminDocs()}catch(e){alert(e.message)}}
 async function loadAdminUsers(){
   const box=$("adminUserList");box.innerHTML="<div class='admin-loading'>Memuatkan...</div>";
-  try{const data=await jsonp({action:"users",token:state.token});if(!data.ok)throw new Error(data.message||"Gagal memuatkan.");box.innerHTML=(data.users||[]).map(u=>`<div class="admin-item"><div><strong>${esc(u.username)}</strong><small>${esc(u.role)} · ${esc(u.status)}</small></div><span class="status-dot">●</span></div>`).join("")}catch(e){box.innerHTML=`<div class='admin-empty'>${esc(e.message)}</div>`}
+  try{
+    const data=await jsonp({action:"users",token:state.token});
+    if(!data.ok)throw new Error(data.message||"Gagal memuatkan.");
+    box.innerHTML=(data.users||[]).map(u=>`<div class="admin-item"><div><strong>${esc(u.username)}</strong><small>${esc(u.role)} · ${esc(u.status)}</small></div><div class="admin-item-actions"><span class="status-dot">●</span><button class="mini-btn" onclick="changeUserPassword('${esc(u.username)}')">Tukar Password</button></div></div>`).join("");
+  }catch(e){box.innerHTML=`<div class='admin-empty'>${esc(e.message)}</div>`}
+}
+async function changeUserPassword(username){
+  const p1=prompt(`Masukkan password baru untuk ${username}:`);
+  if(p1===null)return;
+  if(p1.length<10){alert("Password mesti sekurang-kurangnya 10 aksara.");return;}
+  const p2=prompt("Masukkan semula password baru untuk pengesahan:");
+  if(p2===null)return;
+  if(p1!==p2){alert("Password tidak sepadan.");return;}
+  try{
+    const passwordHash=await sha256Hex(p1);
+    const data=await jsonp({action:"changeUserPassword",token:state.token,username,passwordHash});
+    if(!data.ok)throw new Error(data.message||"Gagal menukar password.");
+    alert(`Password ${username} berjaya ditukar.`);
+  }catch(e){alert(e.message)}
 }
 async function addUser(e){
   e.preventDefault();$("userMsg").textContent="Menyimpan...";
