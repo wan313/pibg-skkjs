@@ -10,7 +10,7 @@ document.querySelectorAll(".yearNow").forEach(x=>x.textContent=new Date().getFul
 
 function jsonp(params){
   return new Promise((resolve,reject)=>{
-    const cb="cb_"+Date.now()+"_"+Math.random().toString(36).slice(2);
+    const cb="cb"+Date.now()+Math.random().toString(36).slice(2);
     const s=document.createElement("script");
     const q=new URLSearchParams({...params,callback:cb});
     s.src=CONFIG.API_URL+"?"+q.toString();
