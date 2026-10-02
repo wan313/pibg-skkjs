@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#32134f">
+  <meta name="description" content="Dokumentasi PIBG Sekolah Kebangsaan Kampung Johan Setia">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="assets/icon-192.png">
+  <link rel="stylesheet" href="styles.css">
+  <title>Dokumentasi PIBG SK Kampung Johan Setia</title>
+</head>
+<body>
+<div id="loginView" class="login-screen">
+  <div class="login-card">
+    <img src="assets/logo-correct-transparent.png" class="login-logo" alt="Logo SK Kampung Johan Setia">
+    <div class="eyebrow">PIBG · DIGITAL DOCUMENTATION</div>
+    <h1>Dokumentasi PIBG</h1>
+    <p>SEKOLAH KEBANGSAAN KAMPUNG JOHAN SETIA</p>
+    <div class="motto">“Changing The Way.. Pupils See The Future”</div>
+    <form id="loginForm">
+      <label>Username<input id="username" autocomplete="username" required></label>
+      <label>Password<input id="password" type="password" autocomplete="current-password" required></label>
+      <button class="gold-btn" type="submit">LOG MASUK</button>
+      <div id="loginMsg" class="form-msg"></div>
+    </form>
+    <small>© <span class="yearNow"></span> PIBG SK Kampung Johan Setia</small>
+  </div>
+</div>
+
+<div id="appView" class="app hidden">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="assets/logo-correct-transparent.png" alt="Logo">
+      <strong>PIBG SKKJS</strong>
+      <span>Dokumentasi Digital</span>
+    </div>
+    <nav id="sideNav">
+      <button data-cat="ALL" class="active">⌂ <span>Laman Utama</span></button>
+      <button data-cat="Surat Keluar">➤ <span>Surat Keluar</span></button>
+      <button data-cat="Surat Masuk">▣ <span>Surat Masuk</span></button>
+      <button data-cat="Minit Mesyuarat">▤ <span>Minit Mesyuarat</span></button>
+      <button data-cat="Program PIBG">▦ <span>Program PIBG</span></button>
+      <button data-cat="Sumbangan PIBG">♡ <span>Sumbangan PIBG</span></button>
+      <button data-cat="Galeri">▧ <span>Galeri</span></button>
+    </nav>
+    <div class="side-years">
+      <span>Tahun</span>
+      <div id="sideYears"></div>
+    </div>
+    <button id="adminBtn" class="admin-nav hidden">⚙ <span>Admin Panel</span></button>
+    <button id="logoutBtn" class="logout">↪ Log Keluar</button>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <button id="menuBtn" class="icon-btn">☰</button>
+      <div>
+        <div class="top-title">DOKUMENTASI PIBG</div>
+        <div class="top-sub">SEKOLAH KEBANGSAAN KAMPUNG JOHAN SETIA</div>
+      </div>
+      <div class="topbar-right">
+        <span class="top-online"><i></i> ONLINE</span>
+        <div class="user-pill">● <span id="userRole">USER</span></div>
+      </div>
+    </header>
+
+    <section class="hero hero-v4">
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <div class="hero-kicker">PIBG DIGITAL ARCHIVE · SKKJS</div>
+          <h2>DOKUMENTASI <span>PIBG</span></h2>
+          <div class="hero-school">SEKOLAH KEBANGSAAN KAMPUNG JOHAN SETIA</div>
+          
+          <div class="hero-motto">Changing The Way.. Pupils See The Future</div>
+          <div class="hero-quick">
+            <span class="live-dot"></span>
+            <span>ARKIB DIGITAL AKTIF</span>
+            <b>2023 — 2026</b>
+          </div>
+        </div>
+        <div class="hero-logo-wrap">
+          <div class="hero-orbit orbit-a"></div>
+          <div class="hero-orbit orbit-b"></div>
+          <img src="assets/logo-correct-transparent.png" alt="Logo Sekolah Kebangsaan Kampung Johan Setia">
+          <span>SKKJS</span>
+        </div>
+      </div>
+      <div class="hero-corner corner-one"></div>
+      <div class="hero-corner corner-two"></div>
+    </section>
+
+    <div class="year-tabs" id="yearTabs"></div>
+
+    <section class="stats" id="stats"></section>
+
+    <div class="search-row">
+      <div class="search">
+        <span>⌕</span><input id="searchInput" placeholder="Cari dokumen, tajuk, nombor rujukan atau kata kunci...">
+      </div>
+      <button id="searchBtn" class="gold-btn">CARI</button>
+    </div>
+
+    <section class="content">
+      <div class="section-head">
+        <div><span class="eyebrow">ARKIB DIGITAL</span><h3 id="sectionTitle">Dokumen Terkini</h3></div>
+        <div class="view-actions">
+          <span id="resultCount" class="result-count"></span>
+          <button id="clearFilter" class="ghost-btn">Lihat Semua →</button>
+        </div>
+      </div>
+      <div id="homeDocuments" class="home-doc-grid"></div>
+      <div class="table-wrap" id="categoryTable">
+        <table class="doc-table">
+          <thead><tr><th>Bil.</th><th>Dokumen</th><th>Tarikh</th><th>No. Rujukan</th><th>Kategori</th><th></th></tr></thead>
+          <tbody id="documentTable"></tbody>
+        </table>
+      </div>
+      <div id="empty" class="empty hidden">Tiada rekod ditemui.</div>
+    </section>
+  </main>
+</div>
+
+<div id="adminModal" class="modal hidden">
+  <div class="modal-box admin-box">
+    <div class="modal-head">
+      <div><strong>ADMIN PANEL</strong><small>Pengurusan Dokumentasi PIBG SKKJS</small></div>
+      <button id="closeAdmin" class="icon-btn">✕</button>
+    </div>
+    <div class="admin-tabs">
+      <button class="admin-tab active" data-admin-tab="docs">Dokumen</button>
+      <button class="admin-tab" data-admin-tab="users">Pengguna</button>
+    </div>
+    <div class="admin-content">
+      <section id="adminDocs" class="admin-section">
+        <div class="admin-grid">
+          <div>
+            <h3>Tambah Dokumen</h3>
+            <form id="docForm" class="admin-form">
+              <input type="hidden" id="docId">
+              <label>Tahun<select id="docYear"></select></label>
+              <label>Kategori<select id="docCategory"></select></label>
+              <label>Tajuk<input id="docTitle" required></label>
+              <label>Tarikh<input id="docDate" placeholder="02/10/2026"></label>
+              <label>No. Rujukan<input id="docRef"></label>
+              <label>Format<input id="docFormat" value="PDF"></label>
+              <label>Link Google Drive / Dokumen<input id="docLink" type="url" required></label>
+              <label>Kata Kunci<input id="docKeywords" placeholder="mesyuarat, surat, PIBG"></label>
+              <div class="admin-actions"><button class="gold-btn" type="submit">SIMPAN DOKUMEN</button><button class="ghost-btn" type="button" id="resetDoc">Bersihkan</button></div>
+              <div id="docMsg" class="form-msg"></div>
+            </form>
+          </div>
+          <div>
+            <h3>Rekod Semasa</h3>
+            <div id="adminDocList" class="admin-list"></div>
+          </div>
+        </div>
+      </section>
+      <section id="adminUsers" class="admin-section hidden">
+        <div class="admin-grid">
+          <div>
+            <h3>Tambah Pengguna</h3>
+            <form id="userForm" class="admin-form">
+              <label>Username<input id="newUsername" required></label>
+              <label>Password<input id="newPassword" type="password" required></label>
+              <label>Role<select id="newRole"><option>Admin</option><option selected>User</option></select></label>
+              <button class="gold-btn" type="submit">TAMBAH PENGGUNA</button>
+              <div id="userMsg" class="form-msg"></div>
+            </form>
+          </div>
+          <div>
+            <h3>Senarai Pengguna</h3>
+            <div id="adminUserList" class="admin-list"></div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<div id="viewer" class="modal hidden">
+  <div class="modal-box">
+    <div class="modal-head">
+      <div><strong id="viewerTitle"></strong><small id="viewerMeta"></small></div>
+      <button id="closeViewer" class="icon-btn">✕</button>
+    </div>
+    <iframe id="viewerFrame" title="Dokumen"></iframe>
+    <div class="modal-actions">
+      <a id="openDoc" class="gold-btn" target="_blank" rel="noopener">BUKA DOKUMEN</a>
+      <button id="closeViewer2" class="ghost-btn">TUTUP</button>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
