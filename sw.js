@@ -1,4 +1,4 @@
-const CACHE="pibg-skkjs-v4-user-management";
+const CACHE="pibg-skkjs-v4-user-management-v7";
 const ASSETS=["./","./index.html","./styles.css","./app.js","./manifest.webmanifest","./assets/logo.png","./assets/icon-192.png","./assets/icon-512.png"];
 self.addEventListener("install",e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting())));
 self.addEventListener("activate",e=>e.waitUntil(self.clients.claim()));

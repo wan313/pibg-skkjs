@@ -1,6 +1,6 @@
 const CONFIG = {
   API_URL: "https://script.google.com/macros/s/AKfycbw3GyI4cK4WlbiHsKcUSIQuiHIJ0cYUISgSrOGniAsRw8Z0l6-Jn6uQ_9Gne4l-8oMc4Q/exec",
-  YEARS: [2023,2024,2025,2026],
+  YEARS: [],
   CATEGORIES: ["Surat Keluar","Surat Masuk","Minit Mesyuarat","Program PIBG","Sumbangan PIBG","Galeri"]
 };
 
@@ -98,10 +98,19 @@ async function login(e){
   }catch(err){$("loginMsg").textContent=err.message}
 }
 
+async function loadYears(){
+  const data = await jsonp({action:"years",token:state.token});
+  if(!data.ok) throw new Error(data.message||"Gagal mendapatkan senarai tahun.");
+  CONFIG.YEARS = (data.years||[]).map(Number).filter(y=>Number.isInteger(y));
+  if(!CONFIG.YEARS.length) CONFIG.YEARS=[new Date().getFullYear()];
+  if(!CONFIG.YEARS.includes(Number(state.year))) state.year=CONFIG.YEARS[0];
+}
+
 async function showApp(){
   $("loginView").classList.add("hidden");$("appView").classList.remove("hidden");
   $("userRole").textContent=(state.user?.role||"USER").toUpperCase();
   $("adminBtn").classList.toggle("hidden", state.user?.role !== "Admin");
+  await loadYears();
   buildYears();buildSideNav();await load();
 }
 function buildYears(){
