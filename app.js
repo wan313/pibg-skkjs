@@ -5,17 +5,60 @@ const CONFIG = {
 };
 
 let state = {year:2026, category:"ALL", docs:[], stats:{}, token:null, user:null};
+const SESSION_TTL_MS = 10 * 60 * 1000; // 10 minit; mesti sepadan dengan TOKEN_TTL di Apps Script
+let sessionTimer = null;
 const $ = id => document.getElementById(id);
 document.querySelectorAll(".yearNow").forEach(x=>x.textContent=new Date().getFullYear());
 
+function startSessionTimer(expiresAt){
+  clearTimeout(sessionTimer);
+  const remaining = Number(expiresAt) - Date.now();
+  if(!Number.isFinite(remaining) || remaining <= 0){
+    forceLogout("Sesi log masuk telah tamat. Sila log masuk semula.");
+    return;
+  }
+  sessionTimer = setTimeout(()=>forceLogout("Sesi log masuk telah tamat. Sila log masuk semula."), remaining);
+}
+
+function checkSessionExpiry(){
+  const expiresAt = Number(sessionStorage.getItem("pibg_expires_at") || 0);
+  if(expiresAt && Date.now() >= expiresAt){
+    forceLogout("Sesi log masuk telah tamat. Sila log masuk semula.");
+    return false;
+  }
+  if(expiresAt) startSessionTimer(expiresAt);
+  return true;
+}
+
+function forceLogout(message){
+  clearTimeout(sessionTimer);
+  sessionTimer = null;
+  sessionStorage.removeItem("pibg_token");
+  sessionStorage.removeItem("pibg_user");
+  sessionStorage.removeItem("pibg_expires_at");
+  if(message) sessionStorage.setItem("pibg_logout_reason", message);
+  location.reload();
+}
+
 function jsonp(params){
   return new Promise((resolve,reject)=>{
+    if(params.token && !checkSessionExpiry()){
+      reject(new Error("Sesi log masuk telah tamat. Sila log masuk semula."));
+      return;
+    }
     const cb="cb"+Date.now()+Math.random().toString(36).slice(2);
     const s=document.createElement("script");
     const q=new URLSearchParams({...params,callback:cb});
     s.src=CONFIG.API_URL+"?"+q.toString();
     const timer=setTimeout(()=>{cleanup();reject(new Error("Server tidak memberi respons."))},15000);
-    window[cb]=data=>{cleanup();resolve(data)};
+    window[cb]=data=>{
+      cleanup();
+      if(params.token && data && data.ok===false && /sesi log masuk diperlukan/i.test(data.message||"")){
+        forceLogout("Sesi log masuk telah tamat. Sila log masuk semula.");
+        return;
+      }
+      resolve(data);
+    };
     s.onerror=()=>{cleanup();reject(new Error("Gagal menyambung ke server."))};
     document.body.appendChild(s);
     function cleanup(){clearTimeout(timer);delete window[cb];s.remove()}
@@ -45,8 +88,11 @@ async function login(e){
     const data=await jsonp({action:"login",username,nonce:challenge.nonce,proof});
     if(!data.ok) throw new Error(data.message||"Username atau password salah.");
     state.token=data.token;state.user=data.user;
+    const expiresAt = Date.now() + SESSION_TTL_MS;
     sessionStorage.setItem("pibg_token",state.token);
     sessionStorage.setItem("pibg_user",JSON.stringify(state.user));
+    sessionStorage.setItem("pibg_expires_at",String(expiresAt));
+    startSessionTimer(expiresAt);
     $("password").value="";
     showApp();
   }catch(err){$("loginMsg").textContent=err.message}
@@ -195,9 +241,32 @@ $("searchBtn").onclick=load;$("searchInput").addEventListener("keydown",e=>{if(e
 $("clearFilter").onclick=()=>{state.category="ALL";$("searchInput").value="";document.body.classList.remove("category-mode");buildSideNav();load()};
 $("closeViewer").onclick=$("closeViewer2").onclick=()=>{$("viewer").classList.add("hidden");$("viewerFrame").src="about:blank"};
 $("menuBtn").onclick=()=>$("appView").querySelector(".sidebar").classList.toggle("open");
-$("logoutBtn").onclick=()=>{sessionStorage.clear();location.reload()};
+$("logoutBtn").onclick=()=>forceLogout();
 $("adminBtn").onclick=openAdmin;$("closeAdmin").onclick=closeAdmin;$("docForm").addEventListener("submit",saveDoc);$("resetDoc").onclick=resetDocForm;$("userForm").addEventListener("submit",addUser);
 document.querySelectorAll(".admin-tab").forEach(tab=>tab.onclick=()=>{document.querySelectorAll(".admin-tab").forEach(x=>x.classList.remove("active"));tab.classList.add("active");const docs=tab.dataset.adminTab==="docs";$("adminDocs").classList.toggle("hidden",!docs);$("adminUsers").classList.toggle("hidden",docs)});
 
-(function init(){const token=sessionStorage.getItem("pibg_token"),user=sessionStorage.getItem("pibg_user");if(token&&user){try{state.token=token;state.user=JSON.parse(user);showApp()}catch(e){sessionStorage.clear()}}})();
+(function init(){
+  const reason=sessionStorage.getItem("pibg_logout_reason");
+  if(reason){
+    sessionStorage.removeItem("pibg_logout_reason");
+    $("loginMsg").textContent=reason;
+  }
+  const token=sessionStorage.getItem("pibg_token"),user=sessionStorage.getItem("pibg_user"),expiresAt=sessionStorage.getItem("pibg_expires_at");
+  if(token&&user&&expiresAt){
+    if(!checkSessionExpiry()){
+      return;
+    }
+    try{
+      state.token=token;
+      state.user=JSON.parse(user);
+      showApp();
+    }catch(e){
+      sessionStorage.clear();
+    }
+  }else if(token||user||expiresAt){
+    sessionStorage.clear();
+  }
+  window.addEventListener("focus",checkSessionExpiry);
+  document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")checkSessionExpiry()});
+})();
 if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));}
