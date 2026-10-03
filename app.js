@@ -1,5 +1,5 @@
 const CONFIG = {
-  API_URL: "https://script.google.com/macros/s/AKfycbw3GyI4cK4WlbiHsKcUSIQuiHIJ0cYUISgSrOGniAsRw8Z0l6-Jn6uQ_9Gne4l-8oMc4Q/exec",
+  API_URL: "https://summer-fire-a018.g-09340564.workers.dev",
   YEARS: [],
   CATEGORIES: ["Surat Keluar","Surat Masuk","Minit Mesyuarat","Program PIBG","Sumbangan PIBG","Galeri"]
 };
